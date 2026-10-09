@@ -3,30 +3,43 @@ mod launch;
 
 use config::{Config, TileView};
 use tauri::{AppHandle, Manager, State};
+use std::path::PathBuf;
+use std::sync::Mutex;
 
-/// App-wide state: the loaded config, or the error explaining why it failed.
+/// App-wide state shared by all commands.
 struct AppState {
-    config: Result<Config, String>,
+    /// Folder holding tiles.json and images/ (None if Windows couldn't provide it).
+    config_dir: Option<PathBuf>,
+    /// The loaded config, or the error explaining why loading failed.
+    config: Mutex<Result<Config, String>>,
 }
 
 /// Returns display-only tile data. Never includes launch targets.
 #[tauri::command]
 fn get_tiles(state: State<'_, AppState>) -> Result<Vec<TileView>, String> {
-    let config = state.config.as_ref().map_err(|e| e.clone())?;
-    Ok(config.tiles.iter().map(TileView::from).collect())
+    let guard = state.config.lock().map_err(|_| "Config is unavailable".to_string())?;
+    let config = guard.as_ref().map_err(|e| e.clone())?;
+    let dir = state.config_dir.as_ref().ok_or("Config folder not found")?;
+    let images_dir = dir.join("images");
+    Ok(config.tiles.iter().map(|tile| TileView::new(tile, &images_dir)).collect())
 }
 
 /// Launches a tile by id. The frontend only sends the id;
 /// what actually gets launched comes from the config.
 #[tauri::command]
 fn launch_tile(app: AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
-    let config = state.config.as_ref().map_err(|e| e.clone())?;
-    let tile = config
-        .tiles
-        .iter()
-        .find(|tile| tile.id == id)
-        .ok_or_else(|| format!("Unknown tile: {id}"))?;
-    launch::launch(&app, &tile.launch)
+    // Copy the launch info out, then release the lock before launching.
+    let launch = {
+        let guard = state.config.lock().map_err(|_| "Config is unavailable".to_string())?;
+        let config = guard.as_ref().map_err(|e| e.clone())?;
+        config
+            .tiles
+            .iter()
+            .find(|tile| tile.id == id)
+            .map(|tile| tile.launch.clone())
+            .ok_or_else(|| format!("Unknown tile: {id}"))?
+    };
+    launch::launch(&app, &launch)
 }
 
 /// Brings the launcher window to the front, restoring it if it was minimized.
@@ -51,12 +64,15 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let config = app
-                .path()
-                .app_config_dir()
-                .map_err(|e| format!("Could not find the config folder: {e}"))
-                .and_then(|dir| config::load_or_create(&dir));
-            app.manage(AppState { config });
+                   let config_dir = app.path().app_config_dir().ok();
+            let config = match &config_dir {
+                Some(dir) => config::load_or_create(dir),
+                None => Err("Could not find the config folder".to_string()),
+            };
+            app.manage(AppState {
+                config_dir,
+                config: Mutex::new(config),
+            });
                         // Global "Home" hotkey: Ctrl+Alt+Home brings the launcher
             // to the front from anywhere, even while another app is open.
             {

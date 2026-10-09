@@ -23,29 +23,45 @@ pub fn load_or_create(dir: &Path) -> Result<Config, String> {
     println!("Loading tiles from {}", path.display());
     let json = fs::read_to_string(&path)
         .map_err(|e| format!("Could not read {}: {e}", path.display()))?;
-       let mut config =
+          let config =
         parse_config(&json).map_err(|e| format!("{e}\n(in {})", path.display()))?;
 
-    // Images live in an "images" folder next to tiles.json.
+    // Make sure the images folder exists, so it's easy to find and fill.
     let images_dir = dir.join("images");
     fs::create_dir_all(&images_dir)
         .map_err(|e| format!("Could not create {}: {e}", images_dir.display()))?;
 
-    // Validation already confirmed each image is a plain file name,
-    // so joining it onto the images folder can't escape that folder.
-    for tile in &mut config.tiles {
-        tile.image = tile
-            .image
-            .take()
-            .map(|name| images_dir.join(name).to_string_lossy().into_owned());
-    }
-
     Ok(config)
+}
+
+/// Validates and saves the config as tiles.json in `dir`.
+/// The previous file is kept as tiles.json.bak, and the new one is written
+/// to a temp file first, so a crash mid-save can't leave a half-written tiles.json.
+pub fn save_config(dir: &Path, config: &Config) -> Result<(), String> {
+    validate(config)?;
+
+    let json = serde_json::to_string_pretty(config)
+        .map_err(|e| format!("Could not convert config to JSON: {e}"))?;
+
+    let path = dir.join("tiles.json");
+    let backup = dir.join("tiles.json.bak");
+    let temp = dir.join("tiles.json.tmp");
+
+    fs::write(&temp, json)
+        .map_err(|e| format!("Could not write {}: {e}", temp.display()))?;
+    if path.exists() {
+        fs::copy(&path, &backup)
+            .map_err(|e| format!("Could not back up {}: {e}", path.display()))?;
+    }
+    fs::rename(&temp, &path)
+        .map_err(|e| format!("Could not replace {}: {e}", path.display()))?;
+
+    Ok(())
 }
 
 /// How a tile is launched. The JSON "type" field selects the variant,
 /// and "target" becomes the String inside it.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "target", rename_all = "kebab-case")]
 pub enum Launch {
     Exe(String),      // "exe"
@@ -54,18 +70,19 @@ pub enum Launch {
 }
 
 /// A full tile as stored in the config. Stays in the backend only.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Tile {
     pub id: String,
     pub name: String,
     pub category: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<String>,
     pub launch: Launch,
 }
 
 /// The whole config file: { "tiles": [ ... ] }
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
     pub tiles: Vec<Tile>,
@@ -80,13 +97,17 @@ pub struct TileView {
     pub image: Option<String>,
 }
 
-impl From<&Tile> for TileView {
-    fn from(tile: &Tile) -> Self {
+impl TileView {
+    /// Display data for one tile, with the image resolved to a full path.
+    pub fn new(tile: &Tile, images_dir: &Path) -> Self {
         TileView {
             id: tile.id.clone(),
             name: tile.name.clone(),
             category: tile.category.clone(),
-            image: tile.image.clone(),
+            image: tile
+                .image
+                .as_ref()
+                .map(|name| images_dir.join(name).to_string_lossy().into_owned()),
         }
     }
 }
@@ -247,5 +268,36 @@ mod tests {
         #[test]
     fn default_config_is_valid() {
         assert!(parse_config(DEFAULT_CONFIG).is_ok());
+    }
+
+        #[test]
+    fn saved_json_parses_back() {
+        let config = parse_config(DEFAULT_CONFIG).unwrap();
+        let json = serde_json::to_string_pretty(&config).unwrap();
+        let again = parse_config(&json).unwrap();
+        assert_eq!(again.tiles.len(), config.tiles.len());
+    }
+
+    #[test]
+    fn save_rejects_invalid_config() {
+        let mut config = parse_config(DEFAULT_CONFIG).unwrap();
+        config.tiles[0].name = String::new();
+        let dir = std::env::temp_dir().join("launcher-test-invalid");
+        assert!(save_config(&dir, &config).is_err());
+    }
+
+    #[test]
+    fn save_writes_file_and_backup() {
+        let dir = std::env::temp_dir().join(format!("launcher-test-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let config = parse_config(DEFAULT_CONFIG).unwrap();
+
+        save_config(&dir, &config).unwrap(); // first save: nothing to back up yet
+        save_config(&dir, &config).unwrap(); // second save: backs up the first
+
+        assert!(dir.join("tiles.json").exists());
+        assert!(dir.join("tiles.json.bak").exists());
+        assert!(!dir.join("tiles.json.tmp").exists());
+        fs::remove_dir_all(&dir).unwrap();
     }
 }
