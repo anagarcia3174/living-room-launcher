@@ -242,8 +242,8 @@ body {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 0 var(--page-padding) var(--page-padding);
-  display: flex;
+  padding: 0.5rem var(--page-padding) var(--page-padding);
+    display: flex;
   flex-direction: column;
   gap: 2rem;
 }
