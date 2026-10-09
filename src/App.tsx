@@ -37,7 +37,6 @@ function handleSelect(id: string) {
     <main className="launcher">
       <h1 className="launcher-title">Home</h1>
       <TileGrid tiles={tiles} onSelect={handleSelect} />
-      <TileGrid tiles={tiles} onSelect={handleSelect} />
 {launchError && <p className="launch-error">{launchError}</p>}
     </main>
   );

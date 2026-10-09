@@ -73,12 +73,9 @@ body {
     box-shadow 150ms ease;
 }
 
-.tile:hover {
-  background: var(--tile-bg-hover);
-}
-
-.tile:focus-visible {
+.tile.is-focused {
   transform: scale(1.05);
+  background: var(--tile-bg-hover);
   box-shadow: 0 0 0 4px var(--focus);
 }
 
