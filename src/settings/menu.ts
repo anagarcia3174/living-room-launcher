@@ -6,7 +6,7 @@ export type Menu =
 
 export const CLOSED: Menu = { kind: "closed" };
 
-export const ITEM_ACTIONS = ["Move up", "Move down", "Remove"] as const;
+export const ITEM_ACTIONS = ["Edit", "Move up", "Move down", "Remove"] as const;
 export type ItemAction = (typeof ITEM_ACTIONS)[number];
 
 // Cancel comes first, so it's the default choice.

@@ -28,3 +28,6 @@ export type LaunchEdit =
   | { type: "protocol"; target: string };
 
 export type TileEdit = Omit<SettingsTile, "launch"> & { launch: LaunchEdit };
+
+// Result of pick_exe. Mirrors PickedExe in settings.rs.
+export type PickedExe = { token: string; path: string };

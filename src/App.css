@@ -352,3 +352,93 @@ body {
   color: #ffb3b3;
   font-size: 1.15rem;
 }
+
+.settings-add {
+  align-self: flex-start;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--tile-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.15rem;
+  cursor: pointer;
+  outline: none;
+  scroll-margin: 1rem;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.settings-add.is-focused {
+  background: var(--focus);
+  color: var(--bg-bottom);
+}
+
+.tile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 64rem;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  background: var(--tile-bg);
+  transition: background-color 220ms ease, box-shadow 220ms ease;
+}
+
+.form-row.is-focused {
+  background: var(--tile-bg-focus);
+  box-shadow: 0 0 0 3px var(--focus);
+}
+
+.form-label {
+  flex: 0 0 8rem;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+}
+
+.form-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.form-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.9rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--bg-bottom);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.15rem;
+  outline: none;
+  user-select: text; /* the page disables text selection; inputs need it back */
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-note {
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The chosen option in a choice field */
+.pill.is-selected {
+  background: var(--text);
+  color: var(--bg-bottom);
+}
