@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { TileData } from "../types";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";import type { TileData } from "../types";
 import { actionFromKey } from "../input/actions";
 import { moveInRows, type Position } from "../input/rowNavigation";
 import { groupIntoRows } from "../rows";
@@ -13,7 +12,15 @@ type Props = {
 export function TileRows({ tiles, onSelect }: Props) {
   const rows = useMemo(() => groupIntoRows(tiles), [tiles]);
   const [focus, setFocus] = useState<Position>({ row: 0, col: 0 });
+    const [pressedId, setPressedId] = useState<string | null>(null);
   const tileRefs = useRef(new Map<string, HTMLButtonElement>());
+
+  // Plays the press animation, then launches.
+  function select(id: string) {
+    setPressedId(id);
+    onSelect(id);
+    setTimeout(() => setPressedId(null), 250);
+  }
 
   const focusedTile = rows[focus.row]?.tiles[focus.col];
 
@@ -22,8 +29,13 @@ export function TileRows({ tiles, onSelect }: Props) {
     if (!focusedTile) return;
     const el = tileRefs.current.get(focusedTile.id);
     el?.focus({ preventScroll: true });
-    el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-  }, [focusedTile]);
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+    }, [focusedTile]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -34,7 +46,7 @@ export function TileRows({ tiles, onSelect }: Props) {
       event.preventDefault();
 
       if (action === "select") {
-        if (!event.repeat) onSelect(focusedTile.id);
+               if (!event.repeat) select(focusedTile.id);
         return;
       }
 
@@ -49,7 +61,11 @@ export function TileRows({ tiles, onSelect }: Props) {
   return (
     <div className="rows">
       {rows.map((row, rowIndex) => (
-        <section key={row.category} className="row">
+                <section
+          key={row.category}
+          className="row"
+          style={{ "--row-index": rowIndex } as CSSProperties}
+        >
           <h2 className="row-title">{row.label}</h2>
           <div className="row-tiles">
             {row.tiles.map((tile, colIndex) => (
@@ -57,12 +73,13 @@ export function TileRows({ tiles, onSelect }: Props) {
                 key={tile.id}
                 tile={tile}
                 isFocused={rowIndex === focus.row && colIndex === focus.col}
+                isPressed={pressedId === tile.id}
                 buttonRef={(el) => {
                   if (el) tileRefs.current.set(tile.id, el);
                   else tileRefs.current.delete(tile.id);
                 }}
                 onHighlight={() => setFocus({ row: rowIndex, col: colIndex })}
-                onSelect={onSelect}
+                onSelect={select}
               />
             ))}
           </div>
