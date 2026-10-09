@@ -7,6 +7,7 @@ import type { TileData } from "./types";
 function App() {
   const [tiles, setTiles] = useState<TileData[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [launchError, setLaunchError] = useState<string | null>(null);
 
   useEffect(() => {
     invoke<TileData[]>("get_tiles")
@@ -14,10 +15,10 @@ function App() {
       .catch((e) => setError(String(e)));
   }, []);
 
-  function handleSelect(id: string) {
-    // Launching comes in Phase 4. For now, just confirm selection works.
-    console.log("Selected tile:", id);
-  }
+function handleSelect(id: string) {
+  setLaunchError(null);
+  invoke("launch_tile", { id }).catch((e) => setLaunchError(String(e)));
+}
 
   if (error) {
     return (
@@ -36,6 +37,8 @@ function App() {
     <main className="launcher">
       <h1 className="launcher-title">Home</h1>
       <TileGrid tiles={tiles} onSelect={handleSelect} />
+      <TileGrid tiles={tiles} onSelect={handleSelect} />
+{launchError && <p className="launch-error">{launchError}</p>}
     </main>
   );
 }
