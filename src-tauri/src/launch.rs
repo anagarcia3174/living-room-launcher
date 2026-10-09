@@ -1,14 +1,14 @@
 use crate::config::Launch;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_opener::OpenerExt;
 
 /// Launches a tile's target. Only called with launch info from the validated config.
 pub fn launch(app: &AppHandle, launch: &Launch) -> Result<(), String> {
     match launch {
         Launch::Exe(path) => launch_exe(path),
-        Launch::UrlApp(url) => launch_url_app(url),
+        Launch::UrlApp(url) => launch_url_app(app, url),
         Launch::Protocol(url) => app
             .opener()
             .open_url(url, None::<&str>)
@@ -33,10 +33,23 @@ fn launch_exe(path: &str) -> Result<(), String> {
         .map_err(|e| format!("Could not start {path}: {e}"))
 }
 
-/// Opens a website in its own Edge app window (no tabs or address bar).
-fn launch_url_app(url: &str) -> Result<(), String> {
+/// Opens a website in its own fullscreen Edge app window (no tabs or address bar).
+fn launch_url_app(app: &AppHandle, url: &str) -> Result<(), String> {
     let edge = find_edge().ok_or("Microsoft Edge was not found")?;
+
+    // A dedicated Edge profile just for the launcher. It runs as its own Edge
+    // process, so these options always apply, even if Edge is already open.
+    let profile = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Could not find the app data folder: {e}"))?
+        .join("edge-profile");
+
     Command::new(edge)
+        .arg(format!("--user-data-dir={}", profile.display()))
+        .arg("--start-fullscreen")
+        .arg("--no-first-run")
+        .arg("--no-default-browser-check")
         .arg(format!("--app={url}"))
         .spawn()
         .map(|_| ())
