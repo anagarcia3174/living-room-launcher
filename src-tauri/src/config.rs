@@ -1,9 +1,30 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::fs;
 use std::path::Path;
 
 /// URL schemes a `protocol` tile may use. Add new ones here on purpose.
 const ALLOWED_PROTOCOLS: &[&str] = &["steam"];
+
+/// The starter config, embedded into the app at compile time.
+const DEFAULT_CONFIG: &str = include_str!("../default-tiles.json");
+
+/// Loads tiles.json from `dir`, creating it from the starter config if missing.
+pub fn load_or_create(dir: &Path) -> Result<Config, String> {
+    let path = dir.join("tiles.json");
+
+    if !path.exists() {
+        fs::create_dir_all(dir)
+            .map_err(|e| format!("Could not create {}: {e}", dir.display()))?;
+        fs::write(&path, DEFAULT_CONFIG)
+            .map_err(|e| format!("Could not write {}: {e}", path.display()))?;
+    }
+
+    println!("Loading tiles from {}", path.display());
+    let json = fs::read_to_string(&path)
+        .map_err(|e| format!("Could not read {}: {e}", path.display()))?;
+    parse_config(&json).map_err(|e| format!("{e}\n(in {})", path.display()))
+}
 
 /// How a tile is launched. The JSON "type" field selects the variant,
 /// and "target" becomes the String inside it.
@@ -204,5 +225,10 @@ mod tests {
               "launch": { "type": "url-app", "target": "https://a.com" } }
         ] }"#;
         assert!(parse_config(json).is_err());
+    }
+
+        #[test]
+    fn default_config_is_valid() {
+        assert!(parse_config(DEFAULT_CONFIG).is_ok());
     }
 }

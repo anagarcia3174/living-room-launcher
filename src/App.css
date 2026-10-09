@@ -81,3 +81,12 @@ body {
   transform: scale(1.05);
   box-shadow: 0 0 0 4px var(--focus);
 }
+
+.launcher-error {
+  margin: 0;
+  font-family: Consolas, monospace;
+  font-size: 1.25rem;
+  color: #ff8a8a;
+  white-space: pre-wrap;
+  user-select: text; /* allow copying the error message */
+}

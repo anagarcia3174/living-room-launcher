@@ -1,11 +1,35 @@
+import { useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import { TileGrid } from "./components/TileGrid";
-import { tiles } from "./data/tiles";
+import type { TileData } from "./types";
 
 function App() {
+  const [tiles, setTiles] = useState<TileData[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    invoke<TileData[]>("get_tiles")
+      .then(setTiles)
+      .catch((e) => setError(String(e)));
+  }, []);
+
   function handleSelect(id: string) {
     // Launching comes in Phase 4. For now, just confirm selection works.
     console.log("Selected tile:", id);
+  }
+
+  if (error) {
+    return (
+      <main className="launcher">
+        <h1 className="launcher-title">Couldn't load tiles</h1>
+        <pre className="launcher-error">{error}</pre>
+      </main>
+    );
+  }
+
+  if (!tiles) {
+    return <main className="launcher" />;
   }
 
   return (

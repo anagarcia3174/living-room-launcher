@@ -1,0 +1,40 @@
+{
+  "tiles": [
+    {
+      "id": "netflix",
+      "name": "Netflix",
+      "category": "streaming",
+      "launch": { "type": "url-app", "target": "https://www.netflix.com" }
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "category": "streaming",
+      "launch": { "type": "url-app", "target": "https://www.youtube.com" }
+    },
+    {
+      "id": "disney-plus",
+      "name": "Disney+",
+      "category": "streaming",
+      "launch": { "type": "url-app", "target": "https://www.disneyplus.com" }
+    },
+    {
+      "id": "prime-video",
+      "name": "Prime Video",
+      "category": "streaming",
+      "launch": { "type": "url-app", "target": "https://www.primevideo.com" }
+    },
+    {
+      "id": "steam",
+      "name": "Steam",
+      "category": "games",
+      "launch": { "type": "protocol", "target": "steam://open/main" }
+    },
+    {
+      "id": "notepad",
+      "name": "Notepad (test)",
+      "category": "apps",
+      "launch": { "type": "exe", "target": "C:\\Windows\\System32\\notepad.exe" }
+    }
+  ]
+}
