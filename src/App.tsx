@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
-import { TileGrid } from "./components/TileGrid";
 import type { TileData } from "./types";
+import { TileRows } from "./components/TileRows";
 
 function App() {
   const [tiles, setTiles] = useState<TileData[] | null>(null);
@@ -36,7 +36,7 @@ function handleSelect(id: string) {
   return (
     <main className="launcher">
       <h1 className="launcher-title">Home</h1>
-      <TileGrid tiles={tiles} onSelect={handleSelect} />
+<TileRows tiles={tiles} onSelect={handleSelect} />
 {launchError && <p className="launch-error">{launchError}</p>}
     </main>
   );
