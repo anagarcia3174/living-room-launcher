@@ -1,20 +1,24 @@
 :root {
-  /* Theme: change the look from one place */
-  --bg: #0e0f13;
-  --tile-bg: #1f2230;
-  --tile-bg-hover: #2a2e40;
-  --text: #f2f3f7;
+   /* Theme: monochrome charcoal, white as the only accent */
+  --bg-top: #353940;
+  --bg-bottom: #1c1f23;
+  --tile-bg: #25282d;
+  --tile-bg-focus: #2f3339;
+  --text: #f5f6f7;
+  --text-muted: #9a9ea6;
   --focus: #ffffff;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-focus: 0 18px 40px rgba(0, 0, 0, 0.5);
 
   /* Layout */
   --tile-width: clamp(14rem, 18vw, 24rem);
   --page-padding: 3rem;
       --gap: 2rem;
-  --radius: 14px;
+  --radius: 18px;
 
   font-family: "Segoe UI", system-ui, sans-serif;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg-bottom);
 }
 
 *,
@@ -33,6 +37,7 @@ body,
 body {
   overflow: hidden;   /* the launcher page itself never scrolls */
   user-select: none;  /* no accidental text highlighting */
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 70%);
 }
 
 .launcher {
@@ -61,19 +66,20 @@ body {
   color: var(--text);
   font: inherit;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   outline: none;
   transition: transform 150ms ease, background-color 150ms ease,
     box-shadow 150ms ease;
       position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
 .tile.is-focused {
   transform: scale(1.05);
-  background: var(--tile-bg-hover);
-  box-shadow: 0 0 0 4px var(--focus);
+  background: var(--tile-bg-focus);
+  box-shadow: 0 0 0 4px var(--focus), var(--shadow-focus);
 }
 
 .rows {
@@ -95,9 +101,9 @@ body {
 .row-title {
   margin: 0;
   font-size: 1.75rem;
-  font-weight: 600;
-  opacity: 0.85;
-  padding-inline: var(--page-padding);
+  font-weight: 500;
+  color: var(--text-muted);
+    padding-inline: var(--page-padding);
 
 }
 
