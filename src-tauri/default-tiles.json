@@ -28,13 +28,7 @@
       "id": "steam",
       "name": "Steam",
       "category": "games",
-      "launch": { "type": "protocol", "target": "steam://open/main" }
-    },
-    {
-      "id": "notepad",
-      "name": "Notepad (test)",
-      "category": "apps",
-      "launch": { "type": "exe", "target": "C:\\Windows\\System32\\notepad.exe" }
+      "launch": { "type": "protocol", "target": "steam://open/bigpicture" }
     }
   ]
 }
