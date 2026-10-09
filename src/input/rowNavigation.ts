@@ -2,7 +2,7 @@ import type { NavAction } from "./actions";
 
 export type Position = { row: number; col: number };
 
-type MoveAction = Exclude<NavAction, "select">;
+type MoveAction = Exclude<NavAction, "select" | "back">;
 
 /** Returns the new position after a move. rowLengths[i] = number of tiles in row i. */
 export function moveInRows(pos: Position, action: MoveAction, rowLengths: number[]): Position {

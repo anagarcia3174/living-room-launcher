@@ -52,7 +52,6 @@ body {
   margin: 0;
   font-size: 2.5rem;
   font-weight: 600;
-    padding-inline: var(--page-padding);
 }
 
 .tile {
@@ -122,12 +121,13 @@ body {
 }
 
 .launcher-error {
-  margin: 0;
-  font-family: Consolas, monospace;
+  margin: 0 var(--page-padding);
+    font-family: Consolas, monospace;
   font-size: 1.25rem;
   color: #ff8a8a;
   white-space: pre-wrap;
   user-select: text; /* allow copying the error message */
+    padding-inline: var(--page-padding);
 }
 
 .launch-error {
@@ -200,4 +200,44 @@ body {
 .cursor-hidden,
 .cursor-hidden * {
   cursor: none !important;
+}
+
+.launcher-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: var(--page-padding);
+}
+
+.icon-button {
+  width: 3.25rem;
+  height: 3.25rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--tile-bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  outline: none;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 220ms ease, color 220ms ease;
+}
+
+/* Focused gear: white fill with a dark icon, like the selected pill in the reference */
+.icon-button.is-focused {
+  background: var(--focus);
+  color: var(--bg-bottom);
+  transform: scale(1.08);
+}
+
+.hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.settings-body {
+  padding-inline: var(--page-padding);
 }

@@ -1,6 +1,4 @@
-// Abstract navigation actions. The keyboard maps to these now,
-// and a controller can map to the same actions in Phase 10.
-export type NavAction = "up" | "down" | "left" | "right" | "select";
+export type NavAction = "up" | "down" | "left" | "right" | "select" | "back";
 
 const KEY_TO_ACTION: Record<string, NavAction> = {
   ArrowUp: "up",
@@ -8,6 +6,7 @@ const KEY_TO_ACTION: Record<string, NavAction> = {
   ArrowLeft: "left",
   ArrowRight: "right",
   Enter: "select",
+  Escape: "back",
 };
 
 export function actionFromKey(key: string): NavAction | null {
