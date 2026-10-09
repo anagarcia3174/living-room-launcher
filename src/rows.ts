@@ -1,14 +1,13 @@
-import type { TileData } from "./types";
 
-export type TileRow = {
+export type TileRow<T> = {
   category: string;
   label: string;
-  tiles: TileData[];
+  tiles: T[];
 };
 
 /** Groups tiles by category, keeping the order categories first appear in the config. */
-export function groupIntoRows(tiles: TileData[]): TileRow[] {
-  const rows: TileRow[] = [];
+export function groupIntoRows<T extends { category: string }>(tiles: T[]): TileRow<T>[] {
+  const rows: TileRow<T>[] = [];
 
   for (const tile of tiles) {
     let row = rows.find((r) => r.category === tile.category);

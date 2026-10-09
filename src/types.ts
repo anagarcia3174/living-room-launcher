@@ -19,3 +19,12 @@ export type SettingsTile = {
   image: string | null;
   launch: SettingsLaunch;
 };
+
+// What save_tiles accepts. Mirrors TileEdit in settings.rs:
+// exe tiles are sent back as a token only, never a path.
+export type LaunchEdit =
+  | { type: "exe"; token: string }
+  | { type: "url-app"; target: string }
+  | { type: "protocol"; target: string };
+
+export type TileEdit = Omit<SettingsTile, "launch"> & { launch: LaunchEdit };
