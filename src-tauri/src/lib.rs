@@ -57,6 +57,29 @@ pub fn run() {
                 .map_err(|e| format!("Could not find the config folder: {e}"))
                 .and_then(|dir| config::load_or_create(&dir));
             app.manage(AppState { config });
+                        // Global "Home" hotkey: Ctrl+Alt+Home brings the launcher
+            // to the front from anywhere, even while another app is open.
+            {
+                use tauri_plugin_global_shortcut::{
+                    Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState,
+                };
+
+                let home = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::Home);
+
+                app.handle().plugin(
+                    tauri_plugin_global_shortcut::Builder::new()
+                        .with_handler(move |app, shortcut, event| {
+                            if shortcut == &home && matches!(event.state(), ShortcutState::Pressed) {
+                                focus_main_window(app);
+                            }
+                        })
+                        .build(),
+                )?;
+
+                if let Err(e) = app.global_shortcut().register(home) {
+                    eprintln!("Could not register Ctrl+Alt+Home: {e}");
+                }
+            }
                         // Only register autostart for the installed (release) build.
             // In development the app runs from a debug build that needs the
             // Vite dev server, so autostarting it at login would show a blank window.
