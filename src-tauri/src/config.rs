@@ -23,7 +23,24 @@ pub fn load_or_create(dir: &Path) -> Result<Config, String> {
     println!("Loading tiles from {}", path.display());
     let json = fs::read_to_string(&path)
         .map_err(|e| format!("Could not read {}: {e}", path.display()))?;
-    parse_config(&json).map_err(|e| format!("{e}\n(in {})", path.display()))
+       let mut config =
+        parse_config(&json).map_err(|e| format!("{e}\n(in {})", path.display()))?;
+
+    // Images live in an "images" folder next to tiles.json.
+    let images_dir = dir.join("images");
+    fs::create_dir_all(&images_dir)
+        .map_err(|e| format!("Could not create {}: {e}", images_dir.display()))?;
+
+    // Validation already confirmed each image is a plain file name,
+    // so joining it onto the images folder can't escape that folder.
+    for tile in &mut config.tiles {
+        tile.image = tile
+            .image
+            .take()
+            .map(|name| images_dir.join(name).to_string_lossy().into_owned());
+    }
+
+    Ok(config)
 }
 
 /// How a tile is launched. The JSON "type" field selects the variant,
