@@ -195,3 +195,9 @@ body {
     transition: none !important;
   }
 }
+
+/* Hide the cursor when idle. Applies to every element, including tile buttons. */
+.cursor-hidden,
+.cursor-hidden * {
+  cursor: none !important;
+}

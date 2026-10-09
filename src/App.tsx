@@ -3,8 +3,10 @@ import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import type { TileData } from "./types";
 import { TileRows } from "./components/TileRows";
+import { useIdleCursor } from "./hooks/useIdleCursor";
 
 function App() {
+    useIdleCursor();
   const [tiles, setTiles] = useState<TileData[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [launchError, setLaunchError] = useState<string | null>(null);

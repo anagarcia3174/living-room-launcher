@@ -78,8 +78,14 @@ export function TileRows({ tiles, onSelect }: Props) {
                   if (el) tileRefs.current.set(tile.id, el);
                   else tileRefs.current.delete(tile.id);
                 }}
-                onHighlight={() => setFocus({ row: rowIndex, col: colIndex })}
-                onSelect={select}
+                onHighlight={() =>
+                  setFocus((prev) =>
+                    prev.row === rowIndex && prev.col === colIndex
+                      ? prev
+                      : { row: rowIndex, col: colIndex }
+                  )
+                }
+                                onSelect={select}
               />
             ))}
           </div>

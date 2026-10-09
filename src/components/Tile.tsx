@@ -25,8 +25,8 @@ export function Tile({ tile, isFocused, isPressed, buttonRef, onHighlight, onSel
       type="button"
            className={className}
       onFocus={onHighlight}
-      onMouseEnter={onHighlight}
-      onClick={() => onSelect(tile.id)}
+      onMouseMove={onHighlight}
+            onClick={() => onSelect(tile.id)}
     >
       {showImage ? (
         <img
