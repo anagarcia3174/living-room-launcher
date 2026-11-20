@@ -67,6 +67,8 @@ pub enum Launch {
     Exe(String),      // "exe"
     UrlApp(String),   // "url-app"
     Protocol(String), // "protocol"
+    SteamGame(String),    // "steam-game": a Steam app id, like "1245620"
+    PrismInstance(String), // "prism-instance": a Prism Launcher instance id
 }
 
 /// A full tile as stored in the config. Stays in the backend only.
@@ -177,10 +179,45 @@ fn validate(config: &Config) -> Result<(), String> {
                     ));
                 }
             }
+            Launch::SteamGame(app_id) => {
+                if !is_steam_app_id(app_id) {
+                    return Err(format!(
+                        "{label}: steam-game target must be a numeric Steam app id, like 1245620"
+                    ));
+                }
+            }
+            Launch::PrismInstance(instance) => {
+                if !is_prism_instance_id(instance) {
+                    return Err(format!(
+                        "{label}: prism-instance target must be an instance id: letters, digits, spaces, dots, dashes or underscores, not starting with a dash"
+                    ));
+                }
+            }
         }
     }
 
     Ok(())
+}
+
+/// Steam app ids are plain numbers, e.g. "1245620". Digits only, so nothing
+/// else can reach the command line.
+fn is_steam_app_id(id: &str) -> bool {
+    !id.is_empty() && id.len() <= 12 && id.chars().all(|c| c.is_ascii_digit())
+}
+
+/// Prism instance ids are folder names. Restricted to safe characters, and
+/// never starting with "-", so the value can't be read as a command-line option.
+fn is_prism_instance_id(id: &str) -> bool {
+    !id.trim().is_empty()
+        && id.len() <= 64
+        && !id.starts_with('-')
+        && !id.starts_with(' ')
+        && !id.ends_with(' ')
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, ' ' | '.' | '-' | '_'))
+        && id != "."
+        && id != ".."
 }
 
 /// True for "netflix.png", false for anything with a path in it.
@@ -263,6 +300,30 @@ mod tests {
               "launch": { "type": "url-app", "target": "https://a.com" } }
         ] }"#;
         assert!(parse_config(json).is_err());
+    }
+
+    #[test]
+    fn accepts_steam_game_and_prism_instance() {
+        let steam = one_tile(r#"{ "type": "steam-game", "target": "1245620" }"#);
+        let prism = one_tile(r#"{ "type": "prism-instance", "target": "1.21.4" }"#);
+        assert!(parse_config(&steam).is_ok());
+        assert!(parse_config(&prism).is_ok());
+    }
+
+    #[test]
+    fn rejects_bad_steam_app_id() {
+        for bad in ["", "abc", "123 --foo", "steam://rungameid/1", "-1"] {
+            let json = one_tile(&format!(r#"{{ "type": "steam-game", "target": "{bad}" }}"#));
+            assert!(parse_config(&json).is_err(), "should reject {bad:?}");
+        }
+    }
+
+    #[test]
+    fn rejects_bad_prism_instance() {
+        for bad in ["", "--help", "-l", "a/b", "a\\b", "..", " lead", "x;y"] {
+            let json = one_tile(&format!(r#"{{ "type": "prism-instance", "target": "{bad}" }}"#));
+            assert!(parse_config(&json).is_err(), "should reject {bad:?}");
+        }
     }
 
         #[test]

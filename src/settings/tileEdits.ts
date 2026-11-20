@@ -40,6 +40,8 @@ export const LAUNCH_LABELS: Record<SettingsLaunch["type"], string> = {
   exe: "Program",
   "url-app": "Website",
   protocol: "Link",
+  "steam-game": "Steam game",
+  "prism-instance": "Minecraft",
 };
 
 /** The path or URL to show under a tile's name. */

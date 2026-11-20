@@ -8,6 +8,19 @@ import type { PickedExe } from "../types";
 type FieldKey = "name" | "category" | "type" | "target" | "image" | "actions";
 const FIELDS: FieldKey[] = ["name", "category", "type", "target", "image", "actions"];
 
+const TARGET_LABELS: Partial<Record<TileForm["launchType"], string>> = {
+  exe: "Program",
+  "url-app": "Address",
+  "steam-game": "App id",
+  "prism-instance": "Instance",
+};
+
+const TARGET_PLACEHOLDERS: Partial<Record<TileForm["launchType"], string>> = {
+  "url-app": "https://www.example.com",
+  "steam-game": "Steam app id, e.g. 1245620",
+  "prism-instance": "Prism instance id, e.g. 1.21.4",
+};
+
 type Props = {
   form: TileForm;
   setForm: Dispatch<SetStateAction<TileForm | null>>;
@@ -164,7 +177,7 @@ export function TileFormView({ form, setForm, categories, saving, onSave, onCanc
 
       <div className={rowClass("target")} onMouseDown={() => focusField("target")}>
         <span className="form-label">
-          {form.launchType === "exe" ? "Program" : form.launchType === "url-app" ? "Address" : "Link"}
+          {TARGET_LABELS[form.launchType] ?? "Link"}
         </span>
         {form.launchType === "exe" ? (
           <div className="form-field">
@@ -178,7 +191,7 @@ export function TileFormView({ form, setForm, categories, saving, onSave, onCanc
             ref={setRef("target")}
             className="form-input"
             value={form.target}
-            placeholder={form.launchType === "url-app" ? "https://www.example.com" : "steam://rungameid/12345"}
+            placeholder={TARGET_PLACEHOLDERS[form.launchType] ?? "steam://rungameid/12345"}
             onChange={(e) => update({ target: e.target.value })}
           />
         )}

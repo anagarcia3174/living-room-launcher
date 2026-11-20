@@ -40,6 +40,8 @@ pub enum SettingsLaunch {
     Exe { token: String, path: String },
     UrlApp { target: String },
     Protocol { target: String },
+    SteamGame { target: String },
+    PrismInstance { target: String },
 }
 
 /// What the frontend sends back when saving.
@@ -60,6 +62,8 @@ pub enum LaunchEdit {
     Exe { token: String },
     UrlApp { target: String },
     Protocol { target: String },
+    SteamGame { target: String },
+    PrismInstance { target: String },
 }
 
 /// Result of picking a program in the file dialog.
@@ -86,6 +90,10 @@ pub fn to_settings_tiles(config: &Config, tokens: &mut ExeTokens) -> Vec<Setting
                 },
                 Launch::UrlApp(target) => SettingsLaunch::UrlApp { target: target.clone() },
                 Launch::Protocol(target) => SettingsLaunch::Protocol { target: target.clone() },
+                Launch::SteamGame(target) => SettingsLaunch::SteamGame { target: target.clone() },
+                Launch::PrismInstance(target) => {
+                    SettingsLaunch::PrismInstance { target: target.clone() }
+                }
             },
         })
         .collect()
@@ -106,6 +114,8 @@ pub fn from_edits(edits: Vec<TileEdit>, tokens: &ExeTokens) -> Result<Config, St
             }
             LaunchEdit::UrlApp { target } => Launch::UrlApp(target),
             LaunchEdit::Protocol { target } => Launch::Protocol(target),
+            LaunchEdit::SteamGame { target } => Launch::SteamGame(target),
+            LaunchEdit::PrismInstance { target } => Launch::PrismInstance(target),
         };
 
         tiles.push(Tile {

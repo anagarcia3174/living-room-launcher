@@ -1,7 +1,7 @@
 import type { SettingsTile } from "../types";
 
 export type LaunchType = SettingsTile["launch"]["type"];
-export const LAUNCH_TYPES: LaunchType[] = ["url-app", "exe", "protocol"];
+export const LAUNCH_TYPES: LaunchType[] = ["url-app", "exe", "protocol", "steam-game", "prism-instance"];
 
 export type TileForm = {
   originalId: string | null; // null when adding a new tile
@@ -56,7 +56,13 @@ export function tileFromForm(form: TileForm, otherIds: string[]): SettingsTile |
   } else {
     const target = form.target.trim();
     if (!target) {
-      return form.launchType === "url-app" ? "Website address is required." : "Link is required.";
+      return form.launchType === "url-app"
+        ? "Website address is required."
+        : form.launchType === "steam-game"
+          ? "Steam app id is required."
+          : form.launchType === "prism-instance"
+            ? "Minecraft instance id is required."
+            : "Link is required.";
     }
     launch = { type: form.launchType, target };
   }

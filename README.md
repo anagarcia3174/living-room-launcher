@@ -9,10 +9,12 @@ A console-style, fullscreen home screen for a Windows living-room PC. It starts 
 
 - **Console-style home screen** with tiles grouped into rows by category (Streaming, Games, Apps)
 - **Keyboard and mouse navigation**: arrow keys to move, Enter to launch, Esc to go back
-- **Three launch types**
+- **Five launch types**
   - **Website**: opens fullscreen in its own Edge app window, with no tabs or address bar
   - **Program**: runs a `.exe` (games, apps)
   - **Link**: opens a protocol link, such as Steam (`steam://open/bigpicture`)
+  - **Steam game**: starts a Steam game by app id, with Steam hidden in the tray
+  - **Minecraft**: starts a Minecraft Java instance straight from Prism Launcher
 - **Built-in Settings screen** to add, edit, reorder and remove tiles, with a Windows file picker for programs
 - **Custom tile art** from a local images folder
 - **Starts with Windows**, and only ever runs one copy
@@ -97,8 +99,8 @@ Example:
 | `name` | Shown on the tile. |
 | `category` | Each category becomes a row, in the order it first appears. Use lowercase. |
 | `image` | Optional. A file name from the images folder (see below), not a path. |
-| `launch.type` | `url-app`, `exe` or `protocol`. |
-| `launch.target` | `url-app`: must start with `https://`. `exe`: a full path ending in `.exe`. `protocol`: currently only `steam://` links are allowed. |
+| `launch.type` | `url-app`, `exe`, `protocol`, `steam-game` or `prism-instance`. |
+| `launch.target` | `url-app`: must start with `https://`. `exe`: a full path ending in `.exe`. `protocol`: currently only `steam://` links are allowed. `steam-game`: a Steam app id (digits only). `prism-instance`: a Prism Launcher instance id. |
 
 In JSON, backslashes in paths must be doubled (`C:\\Games\\...`), or use forward slashes (`C:/Games/...`).
 
@@ -124,13 +126,35 @@ Streaming sites are deliberately **not** embedded inside the launcher. Their vid
 
 The launcher can't force a game into fullscreen. Set your games to **borderless fullscreen** (sometimes called "windowed fullscreen") in their own display settings. That fills the screen and lets Ctrl+Alt+Home switch back instantly. Games in exclusive fullscreen can take a moment to switch.
 
+### Steam games
+
+Use a `steam-game` tile with the game's app id (the number in its store page address, e.g. `store.steampowered.com/app/1245620`):
+
+```json
+{ "id": "elden-ring", "name": "Elden Ring", "category": "games",
+  "launch": { "type": "steam-game", "target": "1245620" } }
+```
+
+Most Steam games need Steam running in the background, so the launcher starts Steam hidden in the tray (`steam.exe -silent -applaunch <id>`) and only the game appears. Sign in to Steam once with "Remember my password" for the Windows account the launcher runs under.
+
+### Minecraft (Java Edition)
+
+Install [Prism Launcher](https://prismlauncher.org/) for the Windows account the launcher runs under, sign in with your Microsoft account, and create an instance. Then use its instance id, which is the instance's folder name (right-click the instance → **Folder**):
+
+```json
+{ "id": "minecraft", "name": "Minecraft", "category": "games",
+  "launch": { "type": "prism-instance", "target": "1.21.4" } }
+```
+
+Prism opens a short progress window while the game loads, then Minecraft starts.
+
 ## Security design
 
 The launcher can start programs, so it's built so that the user interface can never run arbitrary commands:
 
 - **The interface only sends a tile id** to launch something. The real target is looked up in the config by the Rust backend.
 - **The interface never receives or sends program paths.** Program paths only come from the config file or from the Windows file picker, and the Settings screen refers to them through short-lived tokens.
-- **Every config load and save is validated** with the same rules: `https://` only for websites, an allowlist for protocol links, absolute `.exe` paths, and plain file names for images.
+- **Every config load and save is validated** with the same rules: `https://` only for websites, an allowlist for protocol links, absolute `.exe` paths, digits-only Steam app ids, safe Prism instance ids (never starting with `-`), and plain file names for images.
 - **No shell is used.** Programs are started directly, never through `cmd`.
 - **Minimal permissions.** The interface has no access to Tauri's file, shell, dialog, opener or shortcut APIs. A Content Security Policy blocks external scripts, styles, images and network requests, and images can only be loaded from the images folder.
 - **Config saves are atomic,** with a backup, so a crash can't leave a half-written file.

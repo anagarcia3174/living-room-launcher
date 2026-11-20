@@ -10,7 +10,9 @@ export type TileData = {
 export type SettingsLaunch =
   | { type: "exe"; token: string; path: string }
   | { type: "url-app"; target: string }
-  | { type: "protocol"; target: string };
+  | { type: "protocol"; target: string }
+  | { type: "steam-game"; target: string }
+  | { type: "prism-instance"; target: string };
 
 export type SettingsTile = {
   id: string;
@@ -25,7 +27,9 @@ export type SettingsTile = {
 export type LaunchEdit =
   | { type: "exe"; token: string }
   | { type: "url-app"; target: string }
-  | { type: "protocol"; target: string };
+  | { type: "protocol"; target: string }
+  | { type: "steam-game"; target: string }
+  | { type: "prism-instance"; target: string };
 
 export type TileEdit = Omit<SettingsTile, "launch"> & { launch: LaunchEdit };
 
